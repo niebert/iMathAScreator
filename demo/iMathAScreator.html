@@ -409,8 +409,8 @@ function replaceVariables(pOutput,pVariables)  {
 
 	};
 	if (pVariables["COMMONCONTROL"]) {
-		//var QIDs = new Array("4980","4981","4982","4983");
-		var QIDs = new Array("11","22","33","44");
+		var QIDs = new Array("4980","4981","4982","4983");
+		//var QIDs = new Array("11","22","33","44");
 		//alert(pVariables["COMMONCONTROL"]);
 		var vQID_String =  replaceString(pVariables["COMMONCONTROL"],"__co__",",");
 		var vQID_Set = vQID_String.split(",");
@@ -1442,7 +1442,7 @@ $MinimalProofSteps = $so
 //------INCLUDE LIBRARIES---------------
 //--------------------------------------
 
-includecodefrom(___CODE_ID_0___)  //QID for Background Code 0 - Scoring and Code Generation
+includecodefrom(___CODE_ID_0___)  //QID of Background Code 0 - Scoring and Code Generation
 includecodefrom(___CODE_ID_1___)  //QID of Background Code 1 - Scoring and Code Generation
 includecodefrom(___CODE_ID_2___)  //QID of Background Code 2 - Scoring and Code Generation
 includecodefrom(___CODE_ID_3___)  //QID of Background Code 3 - Scoring and Code Generation
