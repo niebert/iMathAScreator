@@ -1,0 +1,1520 @@
+<HTML>
+<HEAD>
+   <TITLE>e-Proof-Creator for iMathAS</TITLE>
+<!--
+#################################################################
+#         Exporter: iMathAS Creator for e-Proofs
+#     for Software: e-Proof-Creator
+#         Filename: iMathAScreator.html 
+#     Used Library: library/ASCIIMathML.js 
+#                   Version 2.0.1 Sept 27, 2007, by Peter Jipsen
+#                   library/xmlparser.js 
+#                
+# Author/Editor:      Engelbert Niehaus                    
+# email:              niehaus@uni-landau.de                 
+# created             13.10.2014             
+# last modifications  21.11.2014             
+# GNU Public License - OpenSource
+# created with JavaScript generator_exporter.html
+#################################################################
+-->
+<script type="text/javascript" src="library/ASCIIMathML.js"></script>
+<script type="text/javascript" src="library/xmlparser.js"></script>
+
+<script type="text/javascript">
+var vVersion = "1.1"
+
+translateOnLoad=true;
+var vXMLparser = new XMLparser();
+var vID2Text = new Array(); //associative Array P1->"Precondition 1"
+
+
+function display() {
+	//displayIMath("PRECONDITION_OPTIONS");
+	displayIMath_Lines("PRECONDITION_OPTIONS","ITEM");
+	//displayIMath("CONCLUSION_OPTIONS");
+	displayIMath_Lines("CONCLUSION_OPTIONS","ITEM");
+	//displayIMath("JUSTIFICATION_OPTIONS");
+	displayIMath_Lines("JUSTIFICATION_OPTIONS","ITEM");
+	//displayIMath("PROOFSTEP_OPTIONS");
+	displayIMath_Lines("PROOFSTEP_OPTIONS","ITEM");
+}
+
+function displayIMath(pOptions) {
+  //var vInputString = document.getElementById("tJUSTIFICATION_OPTIONS").value;
+  var vInputString = ""
+  var vEvalStr = "vInputString = document.fCreator.t"+pOptions+".value;";
+  eval(vEvalStr);
+  //alert("vInputString("+pOptions+")="+vInputString);
+  //vInputString = vInputString.replace(/#.+#/g,"#");
+  //vInputString = vInputString.replace(/([^#\n]*)#([^#\n]*)#([^#\n]*)#([^#\n]*)#([^#\n])*/g,"[$1] `$2` $5");
+  vInputString = vInputString.replace(/([^#\n]*)#([^#\n]*)#([^#\n]*)#([^#\n]*)#([^#\n]*)/g,"[$1] `$2` $3 $4  $5");
+  vInputString = vInputString.replace(/^([^#\n]+)#([^#\n])\n/g,"[$1] $2 \n");
+  //vInputString = vInputString.replace(/#/g,"] ");
+  //vInputString = "["+vInputString.replace(/([A-Z][A-Z0-9]+)/g,"[$1");
+  //vInputString = vInputString.replace(/#/g,"] ");
+  //vInputString = "["+vInputString.replace(/\n([A-Z][A-Z0-9]+)/g,"    [$1");
+  var vOutputNodeID = "out" + pOptions.replace(/_OPTIONS/,"");
+  //alert("vOutputNodeID="+vOutputNodeID);
+  saveASCIImath(vOutputNodeID,vInputString);
+
+}
+
+function displayIMath_Lines(pOptions,pAppendix) {
+  //alert("vCount="+vCount);
+  var vMax = 30;
+  if (pOptions.indexOf("PROOFSTEP")>=0) vMax = 40;
+  var vCount = vMax;
+  var vFound = -1;
+  var vID = "";
+  var vText = "";
+  var vString = "";
+  //var vInputString = document.getElementById("tJUSTIFICATION_OPTIONS").value;
+  var vInputString = ""
+  var vEvalStr = "vInputString = document.fCreator.t"+pOptions+".value;";
+  eval(vEvalStr);
+  var vOutArray = vInputString.split(/\n/);
+  if (vOutArray.length < vCount) {
+  	//alert("vCount="+vCount+" vOutArray.length="+vOutArray.length);
+  	vCount = vOutArray.length;
+  } else {
+  	alert("For "+pOptions+" cound not render all lines! vCount="+vCount+" Items="+vOutArray.length);
+  }
+  var vOutputNodeID = "out" + pOptions.replace(/_OPTIONS/,"");
+  //alert("vOutputNodeID="+vOutputNodeID);
+  if (pOptions.indexOf("PROOFSTEP")>=0) {
+      for (var i=0; i<vCount; i++) {
+        //alert("vOutArray["+i+"]="+vOutArray[i]);
+        //---
+      	 vFound = vOutArray[i].indexOf("#");
+      	 vID   = vOutArray[i].substring(0,vFound);
+      	 vFound = vOutArray[i].lastIndexOf("#");
+      	 vText = vOutArray[i].substring(vFound+1,vOutArray[i].length);
+        //vOutArray[i] = vOutArray[i].replace(/([^#\n]*)#([^#\n]*)#([^#\n]*)#([^#\n]*)#([^#\n]*)\n/g,"[$1] `$2` $5 ");
+         vOutArray[i] = vOutArray[i].replace(/([^#]*)#([^#\n]*)#/,"[$1] `$2`#");
+         var vString = vOutArray[i];
+         var vStart = vOutArray[i].indexOf("#");
+         var vEnd = vOutArray[i].lastIndexOf("#");
+         vOutArray[i] = vString.substring(0,vStart) + " "+ vString.substring(vEnd+1,vString.length);
+         // vOutArray[i] = vOutArray[i].replace(/([^#\n]*)#/,"[$1] ");
+      	 vOutArray[i] += setID2Text(vID,vText);
+      }
+  } else {
+      for (var i=0; i<vCount; i++) {
+      	vFound = vOutArray[i].indexOf("#");
+      	vID   = vOutArray[i].substring(0,vFound);
+      	vText = vOutArray[i].substring(vFound+1,vOutArray[i].length);
+        vOutArray[i] = vOutArray[i].replace(/([^#]*)#([^\n]*)/g,"[$1] $2");
+      	vOutArray[i] += setID2Text(vID,vText);
+      }
+  }
+  for (var i=0; i<vCount; i++) {
+	  saveASCIImath(vOutputNodeID+i+pAppendix,vOutArray[i]);
+  }
+  for (var i=vCount; i<vMax; i++) {
+	  saveASCIImath(vOutputNodeID+i+pAppendix,"");
+  }
+}
+
+function setID2Text (pID,pText) {
+	//alert ("pID='"+pID+"' pText='"+pText+"' setID2Text():115")
+	var vReturn = "";
+	if (pID != "") {
+	    //alert ("pID='"+pID+"' pText='"+pText+"' setID2Text():122")
+		if (pText != "") {
+			vID2Text[pID] = pText;
+		} else {
+			if (vID2Text[pID]) {
+			   vReturn += vID2Text[pID];
+			}
+		}
+	};
+    return vReturn;
+}
+
+function displayAddStep(pNr,pOptions) {
+  //var str = document.getElementById("tJUSTIFICATION_OPTIONS").value;
+  var vText = ""
+  var vID = ""
+  var vEvalStr = "vText = document.fCreator.t"+pOptions+pNr+".value;";
+  eval(vEvalStr);
+  vEvalStr = "vID = document.fCreator.t"+pOptions+"1.value;";
+  eval(vEvalStr);
+  var vOutputNodeID = "out" + pOptions.replace(/_OPTIONS/,"");
+  //alert("vOutputNodeID="+vOutputNodeID);
+  var vOutput = "["+vID+"] "+vText;
+  saveASCIImath(vOutputNodeID,vOutput);
+
+}
+
+function saveASCIImath(pNodeName,pString) {
+  var outnode = document.getElementById(pNodeName);
+  if (!outnode) {
+  	alert("No outnode for "+pNodeName);
+  }
+  var n = outnode.childNodes.length;
+  for (var i=0; i<n; i++)
+    outnode.removeChild(outnode.firstChild);
+  outnode.appendChild(document.createTextNode(pString));
+  AMprocessNode(outnode);
+}
+
+function createCode()  {
+	//var vHashID = new Array("EXPORTER","SOFTWARE","AUTHOR","EMAIL","BGCOLOR","LOOPDEF");
+	var vTemplateID = new Array("TPL1");
+    //var vHashID = new Array("AUTHOR","EMAIL","DATE","TITLE","THEOREM_APPENDIX","AUTHORINGMODE","SHOW_FEEDBACK_SCORE","SHOW_PROOF_SOLUTION","SELECTBOX_PROOFSTEPS","ALLOW_OWN_PROOFSTEPS","PER_ERROR_MINUS_PERCENT","UNNECESSARY_PRECONDITIONS","UNNECESSARY_PROOFSTEPS","RANDOMIZE_PROOFSTEP_IDS","REMAP_PROOFSTEP_IDS","CODE_ID_I","CODE_ID_II","CODE_ID_III","PRECONDITION_OPTIONS","CONCLUSION_OPTIONS","JUSTIFICATION_OPTIONS","PROOFSTEP_OPTIONS");
+	//var vVariables = loadVariables(vHashID);
+	var vVariables = createVariables();
+	//exportXML(vVariables);
+	vVariables["DATE"] = getDateString();
+	vVariables["FILENAME"] = document.fCreator.tFILENAME.value;
+	//##_LOOP_CALL_##
+	// vVariables["LOOP_OUTPUT"] = createLoopString("LOOPDEF");
+	//"","CONCLUSION_OPTIONS","JUSTIFICATION_OPTIONS","PROOFSTEPS_OPTIONS"
+	vVariables["PRECONDITIONS"] = createLoopString("LOOP1","PRECONDITION_OPTIONS");
+	vVariables["CONCLUSIONS"] = createLoopString("LOOP2","CONCLUSION_OPTIONS");
+	vVariables["JUSTIFICATIONS"] = createLoopString("LOOP3","JUSTIFICATION_OPTIONS");
+	vVariables["PROOFSTEPS"] = createLoopProofStep("LOOP4","PROOFSTEP_OPTIONS");
+	vVariables["SOLUTION"] = createLoopSolution("LOOP5","PROOFSTEP_OPTIONS");
+	check_Step_Strings(vVariables);
+	var vInput    = getInputCode(vTemplateID);
+	vOutput = replaceVariables(vInput,vVariables);
+	//vOutput = correctString(vOutput);
+	document.fCreator.tOutput.value = vOutput;	
+	//alert("Call createCode() in eproof.txt:29");
+	var vMessage = "Code generated successfully!\nCopy code ";
+	vMessage += "and save in File '"+vVariables["FILENAME"]+"'\n";
+	vMessage += "In IMathAS perform the following steps\n";
+	vMessage += "  (1) Insert the generated code into 'Common Control'\n"; 
+	vMessage += "  (2) Set Question Type to 'Conditional'\n";
+	vMessage += "  (3) Insert the following code in 'Question Text'\n";
+	vMessage += "      includeqtextfrom("+vVariables["CODE_ID_I"]+")\n";
+	vMessage += "  (4) Save and Test new e-Proof '"+vVariables["TITLE"]+"' in iMathAS.\n";
+	alert(vMessage);
+
+}
+
+function check_Step_Strings(pVariables) {
+	var vInputIDs = new Array("PRECONDITION","CONCLUSION","JUSTIFICATION","PROOFSTEP");
+	var vInputString = "";
+	var vMathDelimiters = "";
+	var vLine = "";
+	var vHashID = ""
+	for (var i=0; i<vInputIDs.length; i++) {
+		vHashID = vInputIDs[i]+"_OPTIONS";
+		vInputString = pVariables[vHashID];
+		var vLineSplit = vInputString.split("\n");
+		for (var j=0; j < vLineSplit.length; j++) {
+			vLine = vLineSplit[j];
+		    vMathDelimiters = vLine.replace(/[^`]/g,"");
+		    //alert("Mathdelimiter="+vMathDelimiters);
+		    if ((vMathDelimiters.length % 2) > 0) {
+		    	alert("ERROR in ASCII-Math: Number of Math-Delimiters ` are not even!\n"
+		    	      + "Please check the follwing "+vInputIDs[i]+"-Line line:\n ["+vLine.replace(/#/,"] "));
+			}
+		}
+	}
+}
+
+function exportXML() {
+   var vVariables = createVariables();
+   document.fCreator.tTextXML.value = createXML(vVariables);
+}
+
+function importXML() {
+	var vText = document.fCreator.tTextXML.value;
+	//alert("Import XML: "+vText);
+	var vXMLparser = new XMLparser();
+	vXMLparser.init(vText);
+	vXMLparser.init_parent(document.fCreator);
+	vXMLparser.parse(vText);
+	var exportVariables = vXMLparser.exportTree();
+	//alert("PRECONDITION_OPTIONS="+exportVariables["PRECONDITION_OPTIONS"]);
+	saveVariables(exportVariables);
+	display();
+	alert("XML imported sucessfully!");
+}
+
+function createVariables () {
+    var vHashID = new Array("AUTHOR","EMAIL","DATE","TITLE","THEOREM_APPENDIX","AUTHORINGMODE","LANGUAGE","SHOW_LOAD_SAVE","SHOW_MAIN_CONTROL","SHOW_FEEDBACK_SCORE","SHOW_PROOF_SOLUTION","SELECTBOX_PROOFSTEPS","ALLOW_OWN_PROOFSTEPS","PER_ERROR_MINUS_PERCENT","UNNECESSARY_PRECONDITIONS","UNNECESSARY_PROOFSTEPS","UNNECESSARY_CONNECTIONS","RANDOMIZE_PROOFSTEP_IDS","REMAP_PROOFSTEP_IDS","COMMONCONTROL","QUESTIONTEXT","QID","PRECONDITION_OPTIONS","CONCLUSION_OPTIONS","JUSTIFICATION_OPTIONS","PROOFSTEP_OPTIONS");
+	var vVariables = loadVariables(vHashID);
+	return vVariables;
+}
+
+function createXML(pVariables) {
+	var vOutput = "<EPROOF>\n";
+	var vValue = "";
+	for (var iHashID in pVariables) {
+		vValue = pVariables[iHashID];
+		if (iHashID.indexOf("_OPTIONS")>0) {
+			vOutput += "  <VARLIST NAME='"+iHashID+"'>\n"+createLoopXML(vValue)+"  </VARLIST>\n";
+			//vOutput += "  <VARLIST name='"+iHashID+"'>\n"+pVariables[iHashID]+"  </VARLIST>\n";
+		} else {
+			vValue = vXMLparser.encodeValue(vValue);
+			vOutput += "  <VARIABLE NAME='"+iHashID+"' VALUE='"+vValue+"' />\n";
+		}
+	}
+	vOutput += "</EPROOF>";
+	return vOutput;
+}
+
+function createLoopXML(vLoopDef)  {
+	var vOutput = "";
+	var vPreID = "";
+	vLoopDef = vXMLparser.encodeValue(vLoopDef);
+	var vLineSplit = vLoopDef.split("\n");
+	for (var i=0; i<vLineSplit.length; i++) {
+		//var vLoopRecord = vLineSplit[i].split("|");
+		var vLoopRecord = vLineSplit[i].split("#");
+		//check if vLoopRecord has length>0
+		vTestString = vLoopRecord[0].replace(/\s/g,"");
+		//alert("length="+vLoopRecord.length+" "+vLoopDef);
+		if (vLoopRecord.length > 1) {
+			var k = vLoopRecord.length;
+			if (vLoopRecord.length == 2) {
+	     		vOutput += "    <STEPDEF SIZE='"+vLoopRecord.length+"' ID='"+vLoopRecord[0]+"'  VALUE='"+vLoopRecord[1]+"' />\n";
+	     	} else {
+	    		//alert("length="+vLoopRecord.length+" "+vLoopDef);
+	    		vID = vLoopRecord[0];
+		 		vOutput += "    <STEPDEF SIZE='"+vLoopRecord.length+"'";
+	     		var vID_Def = new Array("ID","CONNECTION","JUST","OPTJUST","VALUE","PREVIOUS");
+	     		for (var j=0;j<vLoopRecord.length; j++) {
+	     		  vOutput += " "+vID_Def[j]+"='"+vLoopRecord[j]+"'";
+	     		};
+	     		vOutput += " />\n";
+	     	}
+		}
+	}
+	return vOutput;
+}
+
+function getInputCode(pHashID)  {
+	var vInput = "";
+	var vTemplates = loadTemplates(pHashID);
+	for (var iTemplateID in vTemplates) {
+		vInput += vTemplates[iTemplateID];
+	}
+	//alert("getnputQNode:377\nvInput=\n"+vInput);
+	return vInput;
+}
+
+
+function loadTemplates(pHashID)  {
+	var vTemplates = new Array();
+	var vEval = "";
+	for (var i=0; i<pHashID.length; i++) {
+		getFormContent(vTemplates,pHashID[i]);
+	}
+	return vTemplates;
+}
+
+function getFormContent(pHashArray,pID) {
+	vEval = "pHashArray[\""+pID+"\"] = document.fCreator.t"+pID+".value";
+	eval(vEval);
+	if (!pHashArray[pID]) {
+		//alert("ERROR: Input for '"+pID+"' undefined!\niMathAScreator.html:155");
+		pHashArray[pID] = "";
+	}
+}
+
+function saveFormContent(pID,pValue) {
+	vEval = "document.fCreator.t"+pID+".value = pValue";
+	eval(vEval);
+}
+
+function appendFormContent(pID,pValue) {
+	vEval = "document.fCreator.t"+pID+".value += pValue";
+	eval(vEval);
+}
+
+
+function loadVariables(pHashID)  {
+	var vVariables = new Array();
+	var vEval = "";
+	for (var i=0; i<pHashID.length; i++) {
+		getFormContent(vVariables,pHashID[i]);
+	}
+	return vVariables;
+}
+
+
+function replaceStringReverse(pString,pReplace,pSearch)
+//###### replaces in the string "pString" multiple substrings "pSearch" by "pReplace"
+{
+	return replaceString(pString,pSearch,pReplace);
+}
+
+function replaceString(pString,pSearch,pReplace)
+//###### replaces in the string "pString" multiple substrings "pSearch" by "pReplace"
+{
+	//alert("cstring.js - replaceString() "+pString);
+	if (!pString) {
+		alert("replaceString()-Call - pString not defined!\niMathAScreator:112");
+	} else if (pString != '') {
+		var vHelpString = '';
+        var vN = pString.indexOf(pSearch);
+		var vReturnString = '';
+		while (vN >= 0)
+		{
+			if (vN > 0)
+				vReturnString += pString.substring(0, vN);
+			vReturnString += pReplace;
+            if (vN + pSearch.length < pString.length) {
+				pString = pString.substring(vN+pSearch.length, pString.length);
+			} else {
+				pString = ''
+			}
+			vN = pString.indexOf(pSearch);
+		};
+	};
+	return vReturnString + pString;
+}
+
+function getDateString() {
+	var vNow = new Date();
+	var vMonth = vNow.getMonth()+1;
+	return vNow.getDate()+"."+vMonth+"."+vNow.getFullYear();
+};
+
+function saveVariables(pVariables)  {
+	var vEval = "";
+	for (var iHashID in pVariables) {
+		//vEval = "document.fCreator.t"+iHashID+".value = pVariables[\""+iHashID+"\"]";
+    	vEval = "if (document.fCreator.t"+iHashID+") document.fCreator.t"+iHashID+".value = pVariables[\""+iHashID+"\"]";
+		eval(vEval);
+	}
+};
+
+function replaceVariables(pOutput,pVariables)  {
+	//-------------------------------
+	var vReplace = "";
+	var vString = "";
+	for (var iHashID in pVariables) {
+		//pOutput = replaceString(pOutput,"##_"+iHashID+"_##",pVariables[iHashID]);
+		vReplace = pVariables[iHashID];
+		if ((iHashID == "THEOREM_APPENDIX") || (iHashID == "TITLE")) {
+			vReplace = correctString(vReplace);
+		} else if (iHashID.indexOf("_OPTIONS") > iHashID.length - 11) {
+			//vReplace = correctString(vReplace);		
+		} else if (iHashID.indexOf("JUSTIF_") == 0) {
+			if (vReplace) {
+				vString = replaceString(vReplace,",","\",\"");
+				vReplace = "\"" + vString  + "\"";
+			} else {
+			    vReplace = "";
+			}
+		} 
+		pOutput = replaceString(pOutput,"___"+iHashID+"___",vReplace);
+		//pOutput = replaceString(pOutput,"###"+iHashID+"###",pVariables[iHashID]);
+
+	};
+	if (pVariables["COMMONCONTROL"]) {
+		//var QIDs = new Array("4980","4981","4982","4983");
+		var QIDs = new Array("11","22","33","44");
+		//alert(pVariables["COMMONCONTROL"]);
+		var vQID_String =  replaceString(pVariables["COMMONCONTROL"],"__co__",",");
+		var vQID_Set = vQID_String.split(",");
+		var max_i = 4;
+		if (vQID_Set.length< max_i) max_i = vQID_Set.length;
+		for (var i=0; i<max_i; i++) {
+			QIDs[i] = vQID_Set[i];
+		};
+		for (var i=0; i<QIDs.length; i++) {
+			pOutput = replaceString(pOutput,"___CODE_ID_"+i+"___",QIDs[i]);
+		};
+	};
+	return pOutput;
+}
+
+function onLoad_Form_Replace() {
+	var vHashID = new Array("TPL1","LOOP1","LOOP2");
+    var vTemplates = loadTemplates(vHashID);
+    var vVariables = new Array();
+    vVariables["TEXTAREA"] = "TEXTAREA";
+	for (var iTemplateID in vTemplates) {
+		vTemplates[iTemplateID] = replaceVariables(vTemplates[iTemplateID],vVariables);
+	};
+	if (document.fCreator.tDATE) {
+		document.fCreator.tDATE.value = getDateString();
+	};
+	saveVariables(vTemplates);
+}
+
+function createLoopHash (pLoopVars, pLoopRecord) {
+	var vLoopHash = new Array();
+	var iMax = pLoopVars.length;
+	for (var i=0; i<iMax; i++) {
+    	vEval = "vLoopHash[\""+pLoopVars[i]+"\"] = '"+pLoopRecord[i]+"'";
+    	eval(vEval);
+    	//alert("generate_exporter.html:168\n"+vEval);
+	};
+	
+	return vLoopHash;
+}
+
+function getLoopArray(pLOOP_ID,pLoopVars)  {
+    // pLoopVars = new Array("OPTION_ID","OPTION_TEXT");	
+	// pLoopVars = new Array("PREVIOUS","ID","CONNECTION","JUSTIF_IDS","JUSTIF_OPT_IDS");
+    // pLOOP_ID = "LOOP1"
+    var vLoopArray = new Array();
+	var vEval = "";
+	var vLoopDef = "";
+	vEval = "vLoopDef = document.fCreator.t"+pLOOP_ID+".value";
+	eval(vEval);
+	//alert("iMathAScreator.html:341\nvEval='"+vEval+"'\nLOOPDEF="+vLoopDef);
+	if (vLoopDef) {
+		var vLineSplit = vLoopDef.split("\n");
+		for (var i=0; i<vLineSplit.length; i++) {
+			//var vLoopRecord = vLineSplit[i].split("|");
+			var vLoopRecord = vLineSplit[i].split("#");
+			//check if vLoopRecord has length>0
+			vTestString = vLoopRecord[0].replace(/\s/g,"");
+			if (vTestString.length > 0) {
+				var k = vLoopRecord.length;
+				vLoopArray.push(vLoopRecord);
+			}
+		}
+	} else {
+		vLoopArray.push("");
+	}
+	return vLoopArray;
+}
+
+
+function createLoopString(pLOOP_TPL,pLOOP_ID) {
+	//e.g.  pLOOP_TPL = "LOOP1" pLOOP_ID = "PRECONDITION_OPTIONS"
+	var vContent = "";
+	// pLOOP_ID = "PRECONDITION_OPTIONS"
+	// pLOOP_TPL = "LOOP1"
+	var vLoopVars = new Array("OPTION_ID","OPTION_TEXT");	
+    var vLoopArray = getLoopArray(pLOOP_ID,vLoopVars);
+    for (var i=0; i<vLoopArray.length; i++) {
+    	//vLoopArray[i] = correctString(vLoopArray[i]);
+    	vContent += ""+replaceLoopTemplate(pLOOP_TPL,vLoopVars,vLoopArray[i]);
+    	//alert("createLoopString():133\n"+vContent);
+    }
+	return vContent;
+}
+
+function correctString(pString) {
+	var vString = pString;
+	if (pString) {
+ 		//vString = vString.replace(/([^\\])'/g,"$1\\\'");
+		vString = replaceString(vString,"ä","&auml;");
+		vString = replaceString(vString,"ö","&ouml;");
+ 		vString = replaceString(vString,"ü","&uuml;");
+ 		vString = replaceString(vString,"Ä","&Auml;");
+ 		vString = replaceString(vString,"Ö","&Ouml;");
+ 		vString = replaceString(vString,"Ü","&Uuml;");
+ 		vString = replaceString(vString,"ß","&szlig;");
+ 		vString = replaceString(vString,"\"","\\\"");
+	
+	} else {
+		//alert("pString in correctString() was undefined! iMathAScreator.html:398");
+	}
+	return vString+"";
+}
+
+function checkDoubleDefined(pIDS) {
+	var vHashArray = new Array();
+	var str = "";
+	var vOutput = "";
+    var vDefined = "";
+    var vMax = pIDS.length;
+	for (var i=0; i<vMax; i++) {
+    	getFormContent(vHashArray,pIDS[i]);
+    	str = vHashArray[pIDS[i]];
+    	str = str.replace(/#[^\n]+\n/g,",");
+    	//alert("str="+str);
+    	vDefined = str.replace(/[#\n]/g,"");
+    	vOutput += vDefined;
+    }
+    //alert("checkDoubleDefined():393 - vOutput\n"+vOutput);
+    var vSplitArray =vOutput.split(",");
+    for (var n=0; n<vSplitArray.length; n++) {
+    	if (vSplitArray[n] != "") {
+ 		   	for (var i=n+1; i<vSplitArray.length; i++) {
+    			if (vSplitArray[n] == vSplitArray[i]) {
+    				alert("The ID ["+vSplitArray[n]+"] has multiple definitions! Please check!");
+    			}
+    		}
+    	}
+    }
+}
+
+function getAlreadyDefined() {
+	var vIDS = new Array("PRECONDITION_OPTIONS","CONCLUSION_OPTIONS","JUSTIFICATION_OPTIONS");
+	var vHashArray = new Array();
+	var str = "";
+	var vOutput = "";
+    var vDefined = "";
+    for (var i=0; i<vIDS.length; i++) {
+    	getFormContent(vHashArray,vIDS[i]);
+    	str = vHashArray[vIDS[i]];
+    	//alert("str1="+str);
+    	str = str.replace(/#[^\n]+\n/g,"#\n");
+    	//alert("str2="+str);
+    	str = "##"+str.replace(/\n([A-Z][A-Z0-9]+)#/g,"#$1#") + "#";
+    	//alert("str3="+str);
+    	vDefined = str.replace(/\n/g,"");
+    	vOutput += vDefined;
+    };
+    //alert("getAlreadyDefined():414 - vOutput\n"+vOutput);
+    checkDoubleDefined(vIDS);
+    return vOutput;
+}
+
+function is_already_defined (pID) {
+   var vReturn = false;
+   var vID_List = getAlreadyDefined();
+   if (vID_List.indexOf("#"+pID+"#")>=0) {
+   	   vReturn = true;
+   }
+   
+   return vReturn;	
+}
+
+function createLoopProofStep(pLOOP_TPL,pLOOP_ID) {
+	var vContent = "";
+	var vHashID = "";
+	var vAlreadyDefinedSteps = getAlreadyDefined();
+	var vDefinedProofSteps = "";
+   	//alert("vAlreadyDefinedSteps="+vAlreadyDefinedSteps+"\ncreateLoopString():402\n"+vContent);
+ 	var vLoopVars = new Array("OPTION_ID","CONNECTION","JUSTIF_IDS","JUSTIF_OPT_IDS","OPTION_TEXT");
+    var vLoopArray = getLoopArray(pLOOP_ID,vLoopVars);
+    for (var i=0; i<vLoopArray.length; i++) {
+    	vLoopHash = createLoopHash(vLoopVars,vLoopArray[i]);
+    	vLoopHash["OPTION_TEXT"] = correctString(vLoopHash["OPTION_TEXT"]);
+    	vHashID = "##"+vLoopHash["OPTION_ID"]+"##";
+    	if (vAlreadyDefinedSteps.indexOf(vHashID) >=0) {
+        	//alert("ID '"+vLoopHash["OPTION_ID"]+"' already defined!");
+    		if (vDefinedProofSteps.indexOf(vHashID) >=0) {
+    			if (vLoopHash["OPTION_TEXT"] != "") {
+     		   		alert("ID '"+vLoopHash["OPTION_ID"]+"' is used multiple times in "+pLOOP_ID.replace(/_OPTIONS/,"")+"!");
+     		   	};
+        	}
+        } else {
+        	vContent += replaceLoopProofStep(pLOOP_TPL,vLoopHash);
+        }
+        vDefinedProofSteps   += vHashID;
+    	vAlreadyDefinedSteps += vHashID;
+    	//alert("vAlreadyDefinedSteps="+vAlreadyDefinedSteps+"\ncreateLoopString():414\n"+vContent);
+    }
+    //vContent = correctString(vContent);
+    	
+	return vContent;
+}
+
+
+function replaceLoopProofStep(pLOOP_TPL,pLoopHash) {
+	var vEval = "";
+	var vTempate = "";
+	var vEvalStr = "vTempate = document.fCreator.t"+pLOOP_TPL+".value;";
+	eval(vEvalStr);
+	if (vTempate) {
+		vTempate = replaceVariables(vTempate,pLoopHash);
+	} else {
+		alert("Template "+ pLOOP_TPL +" is undefined\niMathCreator.html:219");
+		vTemplate = "Template "+ pLOOP_TPL +" is undefined!";
+	};
+
+	return vTempate;
+
+}
+function StepIsConclusion(pStepID) {
+	var vHashArray = new Array();
+	var vOutput = "";
+	var vReturn = 0;
+    getFormContent(vHashArray,"CONCLUSION_OPTIONS");
+    vOutput = "\n" + vHashArray["CONCLUSION_OPTIONS"];
+    if (vOutput.indexOf(pStepID) >= 0) {
+    	vReturn = 1;
+    }
+    return vReturn;
+    
+}
+
+function createLoopSolution(pLOOP_TPL,pLOOP_ID) {
+	var vContent = "";
+    var vPrevious = " ";
+	var vLoopVars = new Array("OPTION_ID","CONNECTION","JUSTIF_IDS","JUSTIF_OPT_IDS","OPTION_TEXT");
+    var vLoopArray = getLoopArray(pLOOP_ID,vLoopVars);
+    var vPrevious = " ";
+    for (var i=0; i<vLoopArray.length; i++) {
+    	vLoopHash = createLoopHash(vLoopVars,vLoopArray[i]);
+    	vLoopHash["PREVIOUS"] = vPrevious;
+    	if (vLoopHash["OPTION_ID"].indexOf("_F")>0) {
+			// vPrevious remains unchanged;
+		} else if (StepIsConclusion(vLoopHash["OPTION_ID"])>0) {
+			vContent += replaceLoopSolution(pLOOP_TPL,vLoopHash);
+			vPrevious = " ";
+		} else if (vLoopHash["CONNECTION"] == "_LINK_NODE_")  {
+			vPrevious = vLoopHash["OPTION_ID"];
+		} else {
+			vPrevious = vLoopHash["OPTION_ID"];
+			vContent += replaceLoopSolution(pLOOP_TPL,vLoopHash);
+    	}
+    	//alert("createLoopString():133\n"+vContent);
+    }
+	return vContent;
+}
+
+function replaceLoopSolution(pLOOP_TPL,pLoopHash) {
+	var vEval = "";
+	var vTempate = "";
+	var vEvalStr = "vTempate = document.fCreator.t"+pLOOP_TPL+".value;";
+	eval(vEvalStr);
+	if (vTempate) {
+		if (pLoopHash["OPTION_ID"].indexOf("_F")>0) {
+			vTempate = "";
+		} else {
+			vTempate = replaceVariables(vTempate,pLoopHash);
+		};
+	} else {
+		alert("Template "+ pLOOP_TPL +" is undefined\niMathCreator.html:219");
+		vTemplate = "Template "+ pLOOP_TPL +" is undefined!";
+	};
+
+	return vTempate;
+
+}
+
+
+
+function replaceLoopTemplate(pLOOP_TPL,pLoopVars,pLoopRecord) {
+	var vEval = "";
+	var vLoopHash = new Array();
+	var iMax = pLoopVars.length;
+	for (var i=0; i<iMax; i++) {
+    	vEval = "vLoopHash[\""+pLoopVars[i]+"\"] = pLoopRecord["+i+"]";
+    	eval(vEval);
+    	//alert("generate_exporter.html:168\n"+vEval);
+	};
+	vLoopHash["OPTION_TEXT"] = correctString(vLoopHash["OPTION_TEXT"]);
+	var vTempate = "";
+	var vEvalStr = "vTempate = document.fCreator.t"+pLOOP_TPL+".value;";
+	eval(vEvalStr);
+	if (vTempate) {
+		vTempate = replaceVariables(vTempate,vLoopHash);
+	} else {
+		alert("Template "+ pLOOP_TPL +" is undefined\niMathCreator.html:219");
+		vTemplate = "Template "+ pLOOP_TPL +" is undefined!";
+	};
+
+	return vTempate;
+
+}
+
+function addStepLine(pCount,pInputTag) {
+	//alert("pCount="+pCount+ " pInputTag="+pInputTag);
+	var vHashArray = new Array();
+	var vInputTag = pInputTag.replace(/_OPTIONS/,"");
+	var vID = "";
+	var vID_Text = "";
+	var vOutput = "";
+	var vCR = "";
+	var vChar = pInputTag.substr(0,1);
+	if (pCount >= 5) {
+		vChar = "S";
+	}
+    for (var i=1; i<=pCount; i++) {
+		vID = pInputTag + i;
+		getFormContent(vHashArray,vID); 
+		vOutput += vCR + vHashArray[vID];
+		vCR = "#";
+    };
+    getFormContent(vHashArray,pInputTag); 
+    //alert("Add Output="+vOutput);
+    vID = pInputTag + "1";
+    if (vHashArray[vID] == "") {
+    	var vLines = vHashArray[pInputTag].split(/\n/);
+    	vHashArray[vID] = vChar + vLines.length;
+    	vOutput = vHashArray[vID] + vOutput;
+    }
+    vID_Text = pInputTag + pCount;
+    if (vHashArray[vID_Text] != "") {
+        appendFormContent(pInputTag,vOutput+"\n");
+	    alert("Step Definition ["+vHashArray[vID]+"] appended to "+vInputTag+"\niMathAScreator.html:694");
+    } else if (is_already_defined (vHashArray[vID])) {
+        appendFormContent(pInputTag,vOutput+"\n");
+	    alert("Reused Step Definition ["+vHashArray[vID]+"] appended to "+vInputTag+"\niMathAScreator.html:697");
+    } else {
+    	vConnection = pInputTag + "2";
+		if (vHashArray[vConnection] == "_LINK_NODE_") {
+	        appendFormContent(pInputTag,vOutput+"\n");
+		} else if (StepIsConclusion( vHashArray[vID] )>0) {
+	        appendFormContent(pInputTag,vOutput+"\n");
+		} else {	
+    		alert("Definition for "+vInputTag+ " is undefined! Enter an Step Definition and press [Add] again!");
+		}
+    };
+    display();
+}
+
+function clearSteps(pID) {
+	var vHash = new Array();
+	vHash[pID] = "";
+	saveVariables(vHash);
+	displayIMath_Lines(pID,"ITEM"); 
+}
+
+</script>
+
+
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF8">
+</head>
+
+<body bgcolor=white style="font-family:Arial,Verdana; font-size:12pt; color:black" onload="display()">
+<center><h1>iMathAS e-Proof Creator - 
+<script language="Javascript">
+   document.write(vVersion);
+</script>
+</h1>
+<b>Homepage:</b> <a href="http://e-proof.weebly.com" target="_blank">http://e-proof.weebly.com</a> - 
+<b>Library:</b> e-Proof-Creator uses <a href="http://mathcs.chapman.edu/~jipsen/mathml/asciimathdownload.html" target="_blank">ASCIIMathML.js 2.0.2 - LGPL</a> by Peter Jipsen
+<b>Tutorial:</b> <a href="http://minerva.ufpel.edu.br/~amachado/ASCIIMat_Tutorial.htm" target="_blank">ASCIIMath Tutorial</a>
+<br/>
+<b>Licence:</b> <a  href="http://www.gnu.org/licenses/quick-guide-gplv3.pdf" target="vGNU_Licence">GNU Public Licence V3</a> - 
+<b>Download:</b> <a href="http://e-proof.weebly.com/download--tools.html"  target="_blank">e-Proof-Creator</a> - 
+<b>Math-Editor:</b> <a href="http://www.imathas.com/editordemo/demo.html" target="_blank">ASCII-Math-Editor for Proof-Steps</a>
+<hr>
+</center>
+<form name="fCreator">
+<input type="hidden" name="tLOOPDEF" Value="">
+<center>
+<table border=1 bgcolor="#EEEEEE">
+	<tr>
+		<td colspan="2" align="center">
+    <a name="aCreateCode"><b> Generated Code:</b></a>
+<input type="button" name="bCreator2" Value="  Create Code  " onclick="createCode()">
+<b>Filename:</b>
+<input type=text name="tFILENAME" value="eproof.txt" size="20"> 
+<br/>
+ <TEXTAREA name="tOutput" cols="120" rows="10" wrap="off">
+</TEXTAREA> 
+		</td>
+	</tr>
+	<tr>
+		<td colspan="2" align="center">
+<input type="button" name="bCreator1" Value="   Create Code   " onclick="createCode()">  <a href="#XMLexport">Save Current Work as XML</a> &nbsp; - &nbsp; <a href="#aPreconditions">Edit e-Proof</a><br>
+Copy the code above and save the generated Code into the filename with an editor.<br>
+Use e.g. Notepad (Win), Textwrangler (Mac), kate (Linux)  
+		</td>
+	</tr>
+	<tr>
+		<td>
+		   <b>Title of e-Proof:</b> 
+		</td>
+		<td>
+		  <input type=text name="tTITLE" value="Title of my Proof" size="85"> 
+		</td>
+	</tr>
+	<tr>
+		<td>
+		   <b>Author of e-Proof:</b> 
+		</td>
+		<td>
+		  <input type=text name="tAUTHOR" value="Engelbert Niehaus" size="45"> 
+		</td>
+	</tr>
+	<tr>
+		<td>
+		   <b>e-Mail:</b> 
+		</td>
+		<td>
+		  <input type=text name="tEMAIL" value="niehaus@uni-landau.de" size="25"> 
+		</td>
+	</tr>
+	<tr>
+		<td>
+		   <b>Date:</b> 
+		</td>
+		<td>
+		  <input type=text name="tDATE" value="23.10.2014" size="12"> 
+		</td>
+	</tr>
+	<tr>
+		<td>
+		   <b>Comment after the Theorem:</b> 
+		</td>
+		<td>
+		  <input type=text name="tTHEOREM_APPENDIX" value="" size="85"> 
+		  <!--- Due to quotation problems with \" in value, the init value  will be --> 
+		  <!--  set via javascript at the very end of this HTML-file -->
+		</td>
+	</tr>
+	<tr>
+		<td>
+		   <b>AuthoringMode:</b> 
+		</td>
+		<td>
+		  <input type=text name="tAUTHORINGMODE" value="0" size="2"> 
+		</td>
+	</tr>
+	<tr>
+		<td>
+		   <b>Language (EN or DE):</b> 
+		</td>
+		<td>
+		  <input type=text name="tLANGUAGE" value="EN" size="3"> 
+		</td>
+	</tr>
+	<tr>
+		<td>
+		   <b>Show Main-Control in e-Proof:</b> 
+		</td>
+		<td>
+		  <input type=text name="tSHOW_MAIN_CONTROL" value="0" size="2"> 
+		</td>
+	</tr>
+	<tr>
+		<td>
+		   <b>Show Load-Save-Control in e-Proof:</b> 
+		</td>
+		<td>
+		  <input type=text name="tSHOW_LOAD_SAVE" value="0" size="2"> 
+		</td>
+	</tr>
+	<tr>
+		<td>
+		   <b>Show Assessment:</b> 
+		</td>
+		<td>
+		  <input type=text name="tSHOW_FEEDBACK_SCORE" value="1" size="2"> 
+		</td>
+	</tr>
+	<tr>
+		<td>
+		   <b>Show Solution of Proof:</b> 
+		</td>
+		<td>
+		  <input type=text name="tSHOW_PROOF_SOLUTION" value="1" size="2"> 
+		</td>
+	</tr>
+	<tr>
+		<td>
+		   <b>Selectbox for Proof Steps:</b> 
+		</td>
+		<td>
+		  <input type=text name="tSELECTBOX_PROOFSTEPS" value="1" size="2"> 
+		</td>
+	</tr>
+	<tr>
+		<td>
+		   <b>Allow Own Proof Steps:</b> 
+		</td>
+		<td>
+		  <input type=text name="tALLOW_OWN_PROOFSTEPS" value="1" size="2"> 
+		</td>
+	</tr>
+	<tr>
+		<td>
+		   <b>Percent Point Reduction per Error:</b> 
+		</td>
+		<td>
+		  <input type=text name="tPER_ERROR_MINUS_PERCENT" value="10" size="3"> 
+		</td>
+	</tr>
+	<tr>
+		<td>
+		   <b>Unnecessary Preconditions:</b> 
+		</td>
+		<td>
+		  <input type=text name="tUNNECESSARY_PRECONDITIONS" value="3" size="2"> 
+		</td>
+	</tr>
+	<tr>
+		<td>
+		   <b>Unnecessary Proof Steps:</b> 
+		</td>
+		<td>
+		  <input type=text name="tUNNECESSARY_PROOFSTEPS" value="3" size="2"> 
+		</td>
+	</tr>
+	<tr>
+		<td>
+		   <b>Unnecessary Connections:</b> 
+		</td>
+		<td>
+		  <input type=text name="tUNNECESSARY_CONNECTIONS" value="3" size="2"> 
+		</td>
+	</tr>
+	<tr>
+		<td>
+		   <b>Randomize Proof-Step:</b> 
+		</td>
+		<td>
+		  <input type=text name="tRANDOMIZE_PROOFSTEP_IDS" value="0" size="2"> 
+		  For option=1 it is necessary to include the Background Code 3.<br/>Check if setting of Question <tt>New version on reattempt?</tt> is set to <tt>'No - Same Version on reattempt'</tt>
+		</td>
+	</tr>
+	<tr>
+		<td>
+		   <b>Remap Proof-Step:</b> 
+		</td>
+		<td>
+		  <input type=text name="tREMAP_PROOFSTEP_IDS" value="0" size="2"> 
+		  It is necessary to have Background Code for Randomizer and Remapper installed
+		</td>
+	</tr>
+	<tr>
+		<td>
+		   <b>Question-ID Randomizer/Remapper:</b> 
+		</td>
+		<td>
+		  <input type=text name="tCOMMONCONTROL" value="4980,4981,4982,4983" size="26"> Randomize and Remapping Code Steps 
+		</td>
+	</tr>
+	<tr>
+		<td>
+		   <b>Question-ID Background Code 1:</b> 
+		</td>
+		<td>
+		  <input type=text name="tQUESTIONTEXT" value="4980,4981,4982,4983" size="26"> 
+		</td>
+	</tr>
+	<tr>
+		<td>
+		   <b>QID for e-Proof (unique):</b> 
+		</td>
+		<td>
+		  <input type=text name="tQID" value="ZRIRH" size="6"> 
+		</td>
+	</tr>
+	<tr>
+		<td valign="top" colspan=2 align="center">
+		   <b>Preconditions:</b> <a name="aPreconditions">
+		   <input type="button" name="bDELETE1" Value=" Delete " onclick="clearSteps('PRECONDITION_OPTIONS')">
+
+		   <br/><tt>ID # Precondition Definition</tt></a>
+<br/>
+<TEXTAREA name="tPRECONDITION_OPTIONS" cols="115" rows="6" onkeyup="displayIMath_Lines('PRECONDITION_OPTIONS','ITEM')" wrap="off">
+P1#Sei `U subseteq CC` eine Teilmenge
+P2#Sei `gamma: [a,b] -> CC` ein stückweise glatter Weg in `U`
+P3#Sei `f:U - > CC` eine komplexwertige stetige Funktion
+</TEXTAREA>
+<br>
+<b>Precondition:</b>
+<input type="button" name="bAdd1" Value="   ADD   " onclick="addStepLine(2,'PRECONDITION_OPTIONS')">
+ID: <input type="text" name="tPRECONDITION_OPTIONS1" Value="" size="3"  onkeyup="displayAddStep(2,'PRECONDITION_OPTIONS')">
+Definition:
+<input type="text" name="tPRECONDITION_OPTIONS2" Value="" size="80" onkeyup="displayAddStep(2,'PRECONDITION_OPTIONS')">
+<br/>
+<div id="outPRECONDITION"></div>
+<ul>
+  <li><div id="outPRECONDITION0ITEM" align="left"></div></li>
+  <li><div id="outPRECONDITION1ITEM" align="left"></div></li>
+  <li><div id="outPRECONDITION2ITEM" align="left"></div></li>
+  <li><div id="outPRECONDITION3ITEM" align="left"></div></li>
+  <li><div id="outPRECONDITION4ITEM" align="left"></div></li>
+  <li><div id="outPRECONDITION5ITEM" align="left"></div></li>
+  <li><div id="outPRECONDITION6ITEM" align="left"></div></li>
+  <li><div id="outPRECONDITION7ITEM" align="left"></div></li>
+  <li><div id="outPRECONDITION8ITEM" align="left"></div></li>
+  <li><div id="outPRECONDITION9ITEM" align="left"></div></li>
+  <li><div id="outPRECONDITION10ITEM" align="left"></div></li>
+  <li><div id="outPRECONDITION11ITEM" align="left"></div></li>
+  <li><div id="outPRECONDITION12ITEM" align="left"></div></li>
+  <li><div id="outPRECONDITION13ITEM" align="left"></div></li>
+  <li><div id="outPRECONDITION14ITEM" align="left"></div></li>
+  <li><div id="outPRECONDITION15ITEM" align="left"></div></li>
+  <li><div id="outPRECONDITION16ITEM" align="left"></div></li>
+  <li><div id="outPRECONDITION17ITEM" align="left"></div></li>
+  <li><div id="outPRECONDITION18ITEM" align="left"></div></li>
+  <li><div id="outPRECONDITION19ITEM" align="left"></div></li>
+  <li><div id="outPRECONDITION20ITEM" align="left"></div></li>
+  <li><div id="outPRECONDITION21ITEM" align="left"></div></li>
+  <li><div id="outPRECONDITION22ITEM" align="left"></div></li>
+  <li><div id="outPRECONDITION23ITEM" align="left"></div></li>
+  <li><div id="outPRECONDITION24ITEM" align="left"></div></li>
+  <li><div id="outPRECONDITION25ITEM" align="left"></div></li>
+  <li><div id="outPRECONDITION26ITEM" align="left"></div></li>
+  <li><div id="outPRECONDITION27ITEM" align="left"></div></li>
+  <li><div id="outPRECONDITION28ITEM" align="left"></div></li>
+  <li><div id="outPRECONDITION29ITEM" align="left"></div></li>
+  <li><div id="outPRECONDITION30ITEM" align="left"></div></li>
+</ul>
+		</td>
+	</tr>
+	<tr>
+		<td valign="top" colspan=2 align="center">
+		   <b>Conclusions:</b> 
+		   <input type="button" name="bDELETE2" Value=" Delete " onclick="clearSteps('CONCLUSION_OPTIONS')">
+		   <br/><tt>ID # Conclusion Definition</tt>
+<br/>
+<TEXTAREA name="tCONCLUSION_OPTIONS" cols="115" rows="4" onkeyup="displayIMath_Lines('CONCLUSION_OPTIONS','ITEM')" wrap="off">
+C1#`int_{gamma} f(z) d z` 
+C2# `int_{a}^{b} f(gamma(t)) * gamma'(t) dt` 
+</TEXTAREA>
+<br>
+<b>Conclusion:</b>
+<input type="button" name="bAdd2" Value="   ADD   " onclick="addStepLine(2,'CONCLUSION_OPTIONS')">
+ID: <input type="text" name="tCONCLUSION_OPTIONS1" Value="" size="3" onkeyup="displayAddStep(2,'CONCLUSION_OPTIONS')">
+Definition:
+<input type="text" name="tCONCLUSION_OPTIONS2" Value="" size="80" onkeyup="displayAddStep(2,'CONCLUSION_OPTIONS')">
+<br/>
+<div id="outCONCLUSION"></div>
+<ul>
+  <li><div id="outCONCLUSION0ITEM" align="left"></div></li>
+  <li><div id="outCONCLUSION1ITEM" align="left"></div></li>
+  <li><div id="outCONCLUSION2ITEM" align="left"></div></li>
+  <li><div id="outCONCLUSION3ITEM" align="left"></div></li>
+  <li><div id="outCONCLUSION4ITEM" align="left"></div></li>
+  <li><div id="outCONCLUSION5ITEM" align="left"></div></li>
+  <li><div id="outCONCLUSION6ITEM" align="left"></div></li>
+  <li><div id="outCONCLUSION7ITEM" align="left"></div></li>
+  <li><div id="outCONCLUSION8ITEM" align="left"></div></li>
+  <li><div id="outCONCLUSION9ITEM" align="left"></div></li>
+  <li><div id="outCONCLUSION10ITEM" align="left"></div></li>
+  <li><div id="outCONCLUSION11ITEM" align="left"></div></li>
+  <li><div id="outCONCLUSION12ITEM" align="left"></div></li>
+  <li><div id="outCONCLUSION13ITEM" align="left"></div></li>
+  <li><div id="outCONCLUSION14ITEM" align="left"></div></li>
+  <li><div id="outCONCLUSION15ITEM" align="left"></div></li>
+  <li><div id="outCONCLUSION16ITEM" align="left"></div></li>
+  <li><div id="outCONCLUSION17ITEM" align="left"></div></li>
+  <li><div id="outCONCLUSION18ITEM" align="left"></div></li>
+  <li><div id="outCONCLUSION19ITEM" align="left"></div></li>
+  <li><div id="outCONCLUSION20ITEM" align="left"></div></li>
+  <li><div id="outCONCLUSION21ITEM" align="left"></div></li>
+  <li><div id="outCONCLUSION22ITEM" align="left"></div></li>
+  <li><div id="outCONCLUSION23ITEM" align="left"></div></li>
+  <li><div id="outCONCLUSION24ITEM" align="left"></div></li>
+  <li><div id="outCONCLUSION25ITEM" align="left"></div></li>
+  <li><div id="outCONCLUSION26ITEM" align="left"></div></li>
+  <li><div id="outCONCLUSION27ITEM" align="left"></div></li>
+  <li><div id="outCONCLUSION28ITEM" align="left"></div></li>
+  <li><div id="outCONCLUSION29ITEM" align="left"></div></li>
+  <li><div id="outCONCLUSION30ITEM" align="left"></div></li>
+</ul>
+		</td>
+	</tr>
+	<tr>
+		<td valign="top" colspan=2 align="center">
+		   <b>Justification:</b>
+		   <input type="button" name="bDELETE3" Value=" Delete " onclick="clearSteps('JUSTIFICATION_OPTIONS')">
+		   <br/><tt>ID # Justification Definition</tt>
+<br/>
+<TEXTAREA name="tJUSTIFICATION_OPTIONS" cols="115" rows="8" onkeyup="displayIMath_Lines('JUSTIFICATION_OPTIONS','ITEM')" wrap="off">
+DU# `AA_(a,b in CC) : |a + b| <= |a| + |b| `
+DG# `AA_(a,b,c in M) : a * (b + c) = a * b + a * c` 
+AG# `AA_(a,b,c in M) : (a + b) + c = a + (b + c)` 
+KG# `AA_(a,b in M) : a * b = b * c `
+PG# `AA_{a,b in RR, b!=0} AA_{n in NN} : (a/b)^n = a^n/b^n` 
+WE#Definition (Weg): Sei `U subseteq CC` eine Teilmenge und `a,b in RR` mit `a < b`. Ein Weg `gamma` in `U` ist eine stetige Abbildung `gamma : [a,b] -> CC` mit `gamma(U) subseteq U`.
+SPU#Definition (Spur): Sei `gamma: [a,b] -> CC` eine Weg. Die Spur von `gamma` ist definiert als:  `"Spur"(gamma):= { gamma(t) in CC | t in [a,b] }`. 
+WZ#Definition (wegzusammenhängend): Sei `U subseteq CC` eine Teilmenge. `U` heißt wegzusammenhängend,  wenn es zu beliebigen Punkt `z_1, z_2 in U` einen Weg `gamma:[a,b] -> CC` gibt, mit `gamma(a)=z_1`,`gamma(b)=z_2` und `"Spur"(gamma) subseteq U`. 
+GE#Definition (Gebiet): Eine Teilmenge `G subseteq CC` heißt Gebiet, wenn (1) `G` offen, (2) `G != emptyset` und (3) `G` wegzusammenhängend ist.
+WG1#Definition (Weg glatt): Ein Weg `gamma: [a,b] -> CC` heißt glatt, wenn dieser stetig differenzierbar ist.
+UT#Definition (Unterteilung): Sei `[a,b]` ein Intervall, `n in NN` und `a=u_0< ...< u_n = b`. `(u_0, ..., u_{n}) in RR^{n+1}` heißt dann Unterteilung von `[a,b]`.
+WG2#Definition (Wegunterteilung): Sei `gamma: [a,b] -> CC` ein Weg in `U subseteq CC`, `n in NN`, `(u_0, ..., u_{n})` eine Unterteilung von `[a,b]`, `gamma_k : [u_{k-1} , u_k] -> CC` für alle `k in {1, ... ,n}` ein Weg in `U`. `(gamma_{1}, ..., gamma_{n})` heißt Wegunterteilung von `gamma`, wenn gilt `gamma_n(b) = gamma(b)` und  `AA_{k in {1,...,n} } AA_{t in [u_{k-1} , u_k )} : gamma_k(t) = gamma(t)`.
+WG3#Definition (Weg stückweise glatt): Ein Weg `gamma: [a,b] -> CC` heißt stückweise glatt, wenn eine Wegunterteilung `(gamma_1 ,... gamma_n)` aus glatten Wegen `gamma_k` für alle `k in {1, ... , n}` existiert.
+WG4#Definition (Wegintegral): Sei `f: U -> CC` eine stetige Funktion und `gamma: [a,b]` ein glatter Weg, dann ist das Wegintegral wie folgt definiert: `int_{gamma} f := int_{gamma} f(xi) d xi := int_{a}^{b} f(gamma(t)) * gamma'(t) dt`. Ist `gamma` stückweise glatt bzgl. einer Wegunterteilung `(gamma_{1}, ..., gamma_{n})`, dann definiert man `int_{gamma} f(xi) d xi := sum_{k=1}^{n} int_{gamma_{k}} f(xi) d xi`.
+</TEXTAREA>
+<br>
+<b>Justification:</b>
+<input type="button" name="bAdd3" Value="   ADD   " onclick="addStepLine(2,'JUSTIFICATION_OPTIONS')">
+ID: <input type="text" name="tJUSTIFICATION_OPTIONS1" Value="" size="3" onkeyup="displayAddStep(2,'JUSTIFICATION_OPTIONS')">
+Definition:
+<input type="text" name="tJUSTIFICATION_OPTIONS2" Value="" size="80" onkeyup="displayAddStep(2,'JUSTIFICATION_OPTIONS')">
+<br>
+<div id="outJUSTIFICATION"></div>
+<ul>
+  <li><div id="outJUSTIFICATION0ITEM" align="left"></div></li>
+  <li><div id="outJUSTIFICATION1ITEM" align="left"></div></li>
+  <li><div id="outJUSTIFICATION2ITEM" align="left"></div></li>
+  <li><div id="outJUSTIFICATION3ITEM" align="left"></div></li>
+  <li><div id="outJUSTIFICATION4ITEM" align="left"></div></li>
+  <li><div id="outJUSTIFICATION5ITEM" align="left"></div></li>
+  <li><div id="outJUSTIFICATION6ITEM" align="left"></div></li>
+  <li><div id="outJUSTIFICATION7ITEM" align="left"></div></li>
+  <li><div id="outJUSTIFICATION8ITEM" align="left"></div></li>
+  <li><div id="outJUSTIFICATION9ITEM" align="left"></div></li>
+  <li><div id="outJUSTIFICATION10ITEM" align="left"></div></li>
+  <li><div id="outJUSTIFICATION11ITEM" align="left"></div></li>
+  <li><div id="outJUSTIFICATION12ITEM" align="left"></div></li>
+  <li><div id="outJUSTIFICATION13ITEM" align="left"></div></li>
+  <li><div id="outJUSTIFICATION14ITEM" align="left"></div></li>
+  <li><div id="outJUSTIFICATION15ITEM" align="left"></div></li>
+  <li><div id="outJUSTIFICATION16ITEM" align="left"></div></li>
+  <li><div id="outJUSTIFICATION17ITEM" align="left"></div></li>
+  <li><div id="outJUSTIFICATION18ITEM" align="left"></div></li>
+  <li><div id="outJUSTIFICATION19ITEM" align="left"></div></li>
+  <li><div id="outJUSTIFICATION20ITEM" align="left"></div></li>
+  <li><div id="outJUSTIFICATION21ITEM" align="left"></div></li>
+  <li><div id="outJUSTIFICATION22ITEM" align="left"></div></li>
+  <li><div id="outJUSTIFICATION23ITEM" align="left"></div></li>
+  <li><div id="outJUSTIFICATION24ITEM" align="left"></div></li>
+  <li><div id="outJUSTIFICATION25ITEM" align="left"></div></li>
+  <li><div id="outJUSTIFICATION26ITEM" align="left"></div></li>
+  <li><div id="outJUSTIFICATION27ITEM" align="left"></div></li>
+  <li><div id="outJUSTIFICATION28ITEM" align="left"></div></li>
+  <li><div id="outJUSTIFICATION29ITEM" align="left"></div></li>
+  <li><div id="outJUSTIFICATION30ITEM" align="left"></div></li>
+</ul>
+		</td>
+	</tr>
+	<tr>
+		<td valign="top"  colspan=2 align="center">
+		   <b>Proof Steps with Justification:</b> 
+		   <input type="button" name="bDELETE4" Value=" Delete " onclick="clearSteps('PROOFSTEP_OPTIONS')">
+		   <br/><tt>ID#Connection#Justif-IDs#Opt-Justif-IDs#Proof Step Definition</tt>
+		   <br><tt>S1_F2</tt> is an optional FALSE Proof Step for S1
+		   <br/> Wrap Compare Operators with Blanks
+<br/>
+<TEXTAREA name="tPROOFSTEP_OPTIONS" cols="115" rows="17"  onkeyup="displayIMath_Lines('PROOFSTEP_OPTIONS','ITEM')" wrap="off">
+S1# #P1,P3#J2#ProofStep 1 `f(x)`
+S1_F1#=>#P1,P3##ProofStep 1 False 1 `sin(x^2)`
+S2#=>#P1,P3#J2#ProofStep 2 `prod_{k=1}^{oo} p_k^{alpha_k}`
+S3#<#J1,P3,P2#J3#ProofStep 3 `((a,b),(c,d))`
+S4#=#J3,P2#J3#ProofStep 4 `f(x) := {(x^2,"mit "x >= 0),(-x,"mit " x < 0 ):}`
+C1#=>###
+</TEXTAREA>
+<br>
+<b>Proof Step:</b>
+<input type="button" name="bAdd4" Value="   ADD   " onclick="addStepLine(5,'PROOFSTEP_OPTIONS')">
+ID: <input type="text" name="tPROOFSTEP_OPTIONS1" Value="" size="3"  onkeyup="displayAddStep(5,'PROOFSTEP_OPTIONS')">
+Connect: 
+<select name="tPROOFSTEP_OPTIONS2" size="1">
+  <option value="Typ">Type of Proof</option>
+  <option value=" ">Start Sequence</option>
+  <option value="=&gt;" selected>Implication</option>
+  <option value="&lt=&gt;">Equivalence</option>
+  <option value="=">Equals</option>
+  <option value="&gt;=">Greater equal ...</option>
+  <option value="&gt;">Greater...</option>
+  <option value="&lt;=">Lower equal ...</option>
+  <option value="&lt;">Lower ...</option>
+  <option value="subseteq">Subset ...</option>
+  <option value="DEF">Definition of Variables ...</option>
+  <option value="TEXT">Text or Comment...</option>
+  <option value="LINK-NODE" style="display:none">Hidden Link Node</option>
+</select>
+
+Justification(-s):
+<input type="text" name="tPROOFSTEP_OPTIONS3" Value="" size="6">
+Optional Justification(-s):
+<input type="text" name="tPROOFSTEP_OPTIONS4" Value="" size="6">
+<br/>Step Definition:
+<input type="text" name="tPROOFSTEP_OPTIONS5" Value="" size="80"  onkeyup="displayAddStep(5,'PROOFSTEP_OPTIONS')">
+<div id="outPROOFSTEP"></div>
+<ul>
+  <li><div id="outPROOFSTEP0ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP1ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP2ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP3ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP4ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP5ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP6ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP7ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP8ITEM" align ="left"></div></li>
+  <li><div id="outPROOFSTEP9ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP10ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP11ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP12ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP13ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP14ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP15ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP16ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP17ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP18ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP19ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP20ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP21ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP22ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP23ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP24ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP25ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP26ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP27ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP28ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP29ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP30ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP31ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP32ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP33ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP34ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP35ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP36ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP37ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP38ITEM" align ="left"></div></li>
+  <li><div id="outPROOFSTEP39ITEM" align="left"></div></li>
+  <li><div id="outPROOFSTEP40ITEM" align="left"></div></li>
+</ul>
+
+		</td>
+	</tr>
+
+</table>
+<hr/>
+<b>Support/Tutorial:</b> <a href="http://www1.chapman.edu/~jipsen/mathml/asciimathsyntax.html" target="_blank">ASCII Math Syntax</a>
+<hr/>
+<a name="XMLexport">-</a><h2>Export and Import e-Proof as XML-File:</h2>
+<table border=1 bgcolor="#EEEEEE">
+	<tr>
+		<td align="center"><b>XML</b> 
+<input type="button" name="bCreatorExport" Value="  Export XML  " onclick="exportXML()">
+<input type="button" name="bCreatorImport" Value="  Import XML  " onclick="importXML()">
+&nbsp; <a href="#aPreconditions">Edit e-Proof</a>  &nbsp; - &nbsp;  <a href="#aCreateCode">Create Code</a> <br/>
+Use the export/import feature to save and store your current work in a text file. <br/>
+ <TEXTAREA name="tTextXML" cols="120" rows="10" wrap="off">
+</TEXTAREA> 
+		</td>
+	</tr>
+<table>
+</center>
+
+<br/><br/>
+<hr/>
+<table border=1 bgcolor="#EEEEEE">
+	<tr>
+		<td align="center">Quantoren:
+		</td>
+		<td>
+		<input type="text" value="EE_{} AA_{}">
+		</td>
+	</tr>
+	<tr>
+		<td align="center">Folgen-Def.:
+		</td>
+		<td>
+		<input type="text" value="`(a_(n))_(n in NN) in CC^{NN}`">
+		</td>
+	</tr>
+    <tr>
+		<td align="center">Summe:
+		</td>
+		<td>
+		<input type="text" value="sum_(n=0)^(oo)  | sum_(k=m+1)^(n) {:|a_k|:} |" size="45">
+		</td>
+	</tr>
+	<tr>
+		<td align="center">&leq;:
+		</td>
+		<td>
+		<input type="text" value="<=">
+		</td>
+	</tr>
+	<tr>
+		<td align="center">Betrag:
+		</td>
+		<td>
+		<input type="text" value="`|f(x_{n-1})-f(alpha)|`" size="45">
+		</td>
+	</tr>
+	<tr>
+		<td align="center">Griechisch:
+		</td>
+		<td>
+		<input type="text" value="alpha,beta,lambda,epsilson" size="45">
+		</td>
+	</tr>
+	<tr>
+		<td align="center">Funktion `f:[a,b] -> RR` :
+		</td>
+		<td>
+		<input type="text" value="`f:[a,b] -> RR`" size="45">
+		</td>
+	</tr>
+	<tr>
+		<td align="center">Matrix/Vektor:
+		</td>
+		<td>
+		<input type="text" value="((x_1),(x_2))  ((x),(y))  ((a,b),(c,d)) " size="45">
+		</td>
+	</tr>
+</table>
+
+<br/><br/><br/>
+<br/><br/><br/><br/><br/>
+<br/><br/><br/><br/><br/>
+<br/><br/><br/><br/><br/>
+<br/><br/><br/><br/><br/>
+<br/><br/><br/><br/><br/>
+<br/><br/><br/><br/><br/>
+<br/><br/><br/><br/><br/>
+<br/><br/><br/><br/><br/>
+<br/><br/><br/><br/><br/>
+<br/><br/><br/><br/><br/>
+<br/><br/><br/><br/><br/>
+<br/><br/><br/><br/><br/>
+<br/><br/><br/><br/><br/>
+<br/><br/><br/><br/><br/>
+<br/><br/><br/><br/><br/>
+<br/><br/><br/><br/><br/>
+<br/><br/><br/><br/><br/>
+<br/><br/><br/><br/><br/>
+<br/><br/><br/><br/><br/>
+<!---------------------------------------------------------------------------->
+<!---------------------------------------------------------------------------->
+<hr/><b>TPL1</b><br/>
+<!---------------------------------------------------------------------------->
+<TEXTAREA name="tTPL1" cols="125" rows="3">
+//--------------------------------------------------------------------------------------
+//-----e-PROOF: ___TITLE___
+//--------------------------------------------------------------------------------------
+//-----Author:  ___AUTHOR___
+//-----e-Mail:  ___EMAIL___
+//-----created: ___DATE___
+//-----Language: ___LANGUAGE___
+//--------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------
+//-------1-COMMON CONTROL: Settings and Definition of Theorem and Proof-----------------
+//--------------------------------------------------------------------------------------
+// Documentation: see http://e-proof.weebly.com 
+// e-Proof-Creator: http://e-proof.weebly.com/download--tools.html
+//--------------------------------------------------------------------------------------
+  $Theorem_Title = "___TITLE___"
+//--------------------------------------------------------------------------------------
+  $Theorem_Appendix = "___THEOREM_APPENDIX___"
+//--------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------
+//---ASSESSMENT-SETTINGS: e.g.Point Reduction per Error or per Used Support Features--------
+$Per_Error_Minus_Percent  = ___PER_ERROR_MINUS_PERCENT___ // means ___PER_ERROR_MINUS_PERCENT___% less Points per Error per Step
+$Assessment_Minus_Percent = 2 // means 2% less Points per Use of Assessment for Step (default 100%)
+$Suggestion_Minus_Percent = 17 // means 17% less Points per Use of Suggestions for Step (default 20%)
+
+//--------------------------------------------------------------------------------------
+//-----unnecessary options make the proof step more difficult---------------------------
+//--- ... = 0 means very simple
+$unnecessary_preconditions = ___UNNECESSARY_PRECONDITIONS___
+$unnecessary_proofsteps    = ___UNNECESSARY_PROOFSTEPS___
+$unnecessary_connections   = ___UNNECESSARY_CONNECTIONS___
+//--------------------------------------------------------------------------------------
+//------Use Values 1 or 0 --------------------------------------------------------------
+//--------------------------------------------------------------------------------------
+$selectbox_proofsteps    = ___SELECTBOX_PROOFSTEPS___
+$allow_own_proofsteps    = ___ALLOW_OWN_PROOFSTEPS___
+$remap_proofstep_IDs     = ___REMAP_PROOFSTEP_IDS___
+$randomize_proofstep_IDs = ___RANDOMIZE_PROOFSTEP_IDS___
+//-----for Novices----------------------
+$show_feedback_score = ___SHOW_FEEDBACK_SCORE___
+$show_proof_solution = ___SHOW_PROOF_SOLUTION___
+//---For AUTHORS------------------------
+$show_Load_Save_Control = '___SHOW_LOAD_SAVE___'
+$show_Main_Control      = '___SHOW_MAIN_CONTROL___'
+$AuthoringMode = '___AUTHORINGMODE___'
+$AssessmentMode = '0'
+//---Miscellaneous Settings-------------
+$LANGUAGE='___LANGUAGE___'  //EN or DE for German e-Proofs
+$cryptkey='ACBSD'  // used if solution graph is encrypted in e-Proof-XML
+$show_links='1'  // set to '0' for electronic assessment to remove external links
+$MathFormat='AM_HTMLorMML'  // ASCIImath, alter settings for LaTeX math expression (for MathJax-Offline use only)
+// $vQID='___QID___'  //uncomment for use of unique Question-ID
+//----Questionnumbers for Backgroundcode
+$COMMONCONTROL='___COMMONCONTROL___'
+$QUESTIONTEXT='___COMMONCONTROL___'
+$alertDOM='0'
+
+//--------------------------------------------------------------
+//--------------PRECONDITION------------------------------------
+//--------------------------------------------------------------
+$pi = 0
+___PRECONDITIONS___
+//--------------------------------------------------------------
+//--------------CONCLUSION--------------------------------------
+//--------------------------------------------------------------
+$pi = 0
+___CONCLUSIONS___
+//--------------------------------------------------------------
+//--------------JUSTIFICATIONS----------------------------------
+//--------------------------------------------------------------
+$pi = 0
+___JUSTIFICATIONS___
+
+//--------------------------------------------------------------
+//--------------PROOFSTEP---------------------------------------
+//--------------------------------------------------------------
+$pi = 0
+___PROOFSTEPS___
+//--------------------------------------------------------------
+//--------------SOLUTION DEFINITION-----------------------------
+//--------------------------------------------------------------
+
+//-[0]Previous_Step---[1]StepID---[2]Connection---[3]necessary_Justification---[4]optional_Just.
+$so=0
+___SOLUTION___
+$MinimalProofSteps = $so
+
+//--------------------------------------
+//------INCLUDE LIBRARIES---------------
+//--------------------------------------
+
+includecodefrom(___CODE_ID_0___)  //QID for Background Code 0 - Scoring and Code Generation
+includecodefrom(___CODE_ID_1___)  //QID of Background Code 1 - Scoring and Code Generation
+includecodefrom(___CODE_ID_2___)  //QID of Background Code 2 - Scoring and Code Generation
+includecodefrom(___CODE_ID_3___)  //QID of Background Code 3 - Scoring and Code Generation
+
+//-----------------------------------------------------------------------
+//----QUETIONTEXT: uncomment the following 6 lines by removing '//'------
+//----and insert the code in Question Text of your IMathAS question------
+//-----------------------------------------------------------------------
+
+// <SCRIPT type='text/javascript'>
+// includeqtextfrom(___CODE_ID_1___)
+// includeqtextfrom(___CODE_ID_2___)
+// includeqtextfrom(___CODE_ID_3___)
+// </SCRIPT>
+// includeqtextfrom(___CODE_ID_0___)
+
+//----------------------------------------------------------
+//----------------------------------------------------------
+</TEXTAREA>
+<!---------------------------------------------------------------------------->
+<!---------------------------------------------------------------------------->
+<hr/><b>LOOP1 Preconditions</b><br/>
+<!---------------------------------------------------------------------------->
+<TEXTAREA name="tLOOP1" cols="125" rows="3">
+$Precondition[$pi]   = "___OPTION_TEXT___"
+$PreconditionID[$pi] = "___OPTION_ID___"
+$pi += 1
+</TEXTAREA>
+<!---------------------------------------------------------------------------->
+<!---------------------------------------------------------------------------->
+<hr/><b>LOOP2 Conclusions</b><br/>
+<!---------------------------------------------------------------------------->
+<TEXTAREA name="tLOOP2" cols="125" rows="3">
+$Conclusion[$pi]   = "___OPTION_TEXT___"
+$ConclusionID[$pi] = "___OPTION_ID___"
+$pi += 1
+
+</TEXTAREA>
+<!---------------------------------------------------------------------------->
+<!---------------------------------------------------------------------------->
+<hr/><b>LOOP3 Justifications</b><br/>
+<!---------------------------------------------------------------------------->
+<TEXTAREA name="tLOOP3" cols="125" rows="3">
+$SelectedPrecondition[$pi]   = "___OPTION_TEXT___"
+$SelectedPreconditionID[$pi] = "___OPTION_ID___"
+$pi += 1
+
+</TEXTAREA>
+<!---------------------------------------------------------------------------->
+<!---------------------------------------------------------------------------->
+<hr/><b>LOOP4 Proof Steps</b><br/>
+<!---------------------------------------------------------------------------->
+<TEXTAREA name="tLOOP4" cols="125" rows="3">
+$ProofStep[$pi]    = "___OPTION_TEXT___"
+$ProofStepID[$pi]  = "___OPTION_ID___"
+$pi += 1
+
+</TEXTAREA>
+<!---------------------------------------------------------------------------->
+<!---------------------------------------------------------------------------->
+<hr/><b>LOOP5 Solution</b><br/>
+<!---------------------------------------------------------------------------->
+<TEXTAREA name="tLOOP5" cols="125" rows="3">
+$SolutionStep[$so]=array("___PREVIOUS___","___OPTION_ID___","___CONNECTION___",array(___JUSTIF_IDS___),array(___JUSTIF_OPT_IDS___))
+$so+=1
+
+</TEXTAREA>
+<!---------------------------------------------------------------------------->
+ <SCRIPT LANGUAGE="JavaScript">
+    document.fCreator.tTHEOREM_APPENDIX.value = "Wikipedia: <a href=\"http://de.wikipedia.org/wiki/Konvergenzradius\" target=\"_blank\">Konvergenzradius</a>"
+    onLoad_Form_Replace();
+ </SCRIPT>
+</form>
+</body>
+</HTML>

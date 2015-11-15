@@ -1,0 +1,47 @@
+<EPROOF>
+  <VARIABLE NAME='AUTHOR' VALUE='Engelbert Niehaus' />
+  <VARIABLE NAME='EMAIL' VALUE='niehaus@uni-landau.de' />
+  <VARIABLE NAME='DATE' VALUE='18.11.2014' />
+  <VARIABLE NAME='TITLE' VALUE='Majorantenkriterium' />
+  <VARIABLE NAME='THEOREM_APPENDIX' VALUE='' />
+  <VARIABLE NAME='AUTHORINGMODE' VALUE='0' />
+  <VARIABLE NAME='SHOW_FEEDBACK_SCORE' VALUE='1' />
+  <VARIABLE NAME='SHOW_PROOF_SOLUTION' VALUE='1' />
+  <VARIABLE NAME='SELECTBOX_PROOFSTEPS' VALUE='1' />
+  <VARIABLE NAME='ALLOW_OWN_PROOFSTEPS' VALUE='1' />
+  <VARIABLE NAME='PER_ERROR_MINUS_PERCENT' VALUE='10' />
+  <VARIABLE NAME='UNNECESSARY_PRECONDITIONS' VALUE='3' />
+  <VARIABLE NAME='UNNECESSARY_PROOFSTEPS' VALUE='3' />
+  <VARIABLE NAME='RANDOMIZE_PROOFSTEP_IDS' VALUE='0' />
+  <VARIABLE NAME='REMAP_PROOFSTEP_IDS' VALUE='0' />
+  <VARIABLE NAME='CODE_ID_I' VALUE='4001' />
+  <VARIABLE NAME='CODE_ID_II' VALUE='4002' />
+  <VARIABLE NAME='CODE_ID_III' VALUE='4200' />
+  <VARLIST NAME='PRECONDITION_OPTIONS'>
+    <STEPDEF SIZE='2' ID='P1'  VALUE='Seien `sum_{n__eq__1}^{oo} a_{n}` und `sum_{n__eq__1}^{oo} b_{n}` zwei Reihen mit `(a_n)_{n in NN}, (b_n)_{n in NN} in CC^NN`.' />
+    <STEPDEF SIZE='2' ID='P2'  VALUE='`AA_{n in NN} : |a_n| __lt____eq__  b_n`' />
+    <STEPDEF SIZE='2' ID='P3'  VALUE='`sum_{n__eq__1}^{oo} b_{n}` ist konvergent' />
+  </VARLIST>
+  <VARLIST NAME='CONCLUSION_OPTIONS'>
+    <STEPDEF SIZE='2' ID='C1'  VALUE='`sum_{n__eq__1}^{oo} a_{n}` ist konvergent' />
+  </VARLIST>
+  <VARLIST NAME='JUSTIFICATION_OPTIONS'>
+    <STEPDEF SIZE='2' ID='J1'  VALUE='Satz: Absolut konvergente Reihen sind auch konvergent' />
+    <STEPDEF SIZE='2' ID='J2'  VALUE='Satz: Jede Cauchyfolge in `CC` konvergiert in `CC`' />
+    <STEPDEF SIZE='2' ID='J3'  VALUE='Satz: Jede Cauchyfolge in `QQ` konvergiert in `QQ`' />
+    <STEPDEF SIZE='2' ID='J4'  VALUE='Satz: Jede konvergente in `CC` ist eine Cauchyfolge in `CC`' />
+    <STEPDEF SIZE='2' ID='J5'  VALUE='Cauchy-Folgendefinition angewendet auf die Folge der Partialsummen `(s_n)_{n in NN}` mit `s_n:__eq__ sum_{k__eq__1}^n b_n`' />
+    <STEPDEF SIZE='2' ID='J6'  VALUE='Definition der absoluten Konvergenz' />
+    <STEPDEF SIZE='2' ID='DG'  VALUE=' `AA_(a,b,c in M) : a * (b + c) __eq__ a * b + a * c` ' />
+    <STEPDEF SIZE='2' ID='AG'  VALUE=' `AA_(a,b,c in M) : (a + b) + c __eq__ a + (b + c)` ' />
+    <STEPDEF SIZE='2' ID='KG'  VALUE=' `AA_(a,b in M) : a * b __eq__ b * c `' />
+  </VARLIST>
+  <VARLIST NAME='PROOFSTEP_OPTIONS'>
+    <STEPDEF SIZE='5' ID='S1' CONNECTION=' ' JUST='' OPTJUST='P3' VALUE='Gegeben sei die konvergente Reihe `sum_{n__eq__1}^{oo} b_{n}`' />
+    <STEPDEF SIZE='5' ID='S2' CONNECTION='__eq____gt__' JUST='P2,J6' OPTJUST='' VALUE='`AA_{n in NN} : |a_n| __lt____eq__  b_n __eq__ |b_n|` d.h. Reihe `sum_{n__eq__1}^{oo} b_{n}` ist absolut konvergent' />
+    <STEPDEF SIZE='5' ID='S3' CONNECTION='__eq____gt__' JUST='J1,P3,P2' OPTJUST='J3' VALUE='`AA_{epsilon __gt__0} EE_{n_epsilon in NN} AA_{n_1,n_2 in NN, n_epsilon __lt____eq__ n_1 __lt__ n_2} : epsilon __gt__| sum_{n__eq__n_1 + 1}^{n_2}  b_{n}  | __eq__  sum_{n__eq__n_1 + 1}^{n_2}  |b_{n}| __eq__  sum_{n__eq__n_1 + 1}^{n_2}  b_{n} __gt____eq__  sum_{n__eq__n_1 + 1}^{n_2}  |a_{n}|`' />
+    <STEPDEF SIZE='5' ID='S4' CONNECTION='__eq____gt__' JUST='J6' OPTJUST='' VALUE='Die Folge der Partialsummen Reihe `sum_{n__eq__1}^{oo} |a_{n}|` ist eine Cauchy-Folge' />
+    <STEPDEF SIZE='5' ID='S5' CONNECTION='__eq____gt__' JUST='J2' OPTJUST='' VALUE='Reihe `sum_{n__eq__1}^{oo} a_{n}` ist absolut konvergent' />
+    <STEPDEF SIZE='5' ID='C1' CONNECTION='__eq____gt__' JUST='J1' OPTJUST='' VALUE='' />
+  </VARLIST>
+</EPROOF>
