@@ -236,7 +236,7 @@ function importXML() {
 }
 
 function createVariables () {
-    var vHashID = new Array("AUTHOR","EMAIL","DATE","TITLE","THEOREM_APPENDIX","AUTHORINGMODE","SHOW_XML","SHOW_FEEDBACK_SCORE","SHOW_PROOF_SOLUTION","SELECTBOX_PROOFSTEPS","ALLOW_OWN_PROOFSTEPS","PER_ERROR_MINUS_PERCENT","UNNECESSARY_PRECONDITIONS","UNNECESSARY_PROOFSTEPS","UNNECESSARY_CONNECTIONS","RANDOMIZE_PROOFSTEP_IDS","REMAP_PROOFSTEP_IDS","CODE_ID_I","CODE_ID_II","CODE_ID_III","PRECONDITION_OPTIONS","CONCLUSION_OPTIONS","JUSTIFICATION_OPTIONS","PROOFSTEP_OPTIONS");
+    var vHashID = new Array("AUTHOR","EMAIL","DATE","TITLE","THEOREM_APPENDIX","AUTHORINGMODE","LANGUAGE","SHOW_LOAD_SAVE","SHOW_MAIN_CONTROL","SHOW_FEEDBACK_SCORE","SHOW_PROOF_SOLUTION","SELECTBOX_PROOFSTEPS","ALLOW_OWN_PROOFSTEPS","PER_ERROR_MINUS_PERCENT","UNNECESSARY_PRECONDITIONS","UNNECESSARY_PROOFSTEPS","UNNECESSARY_CONNECTIONS","RANDOMIZE_PROOFSTEP_IDS","REMAP_PROOFSTEP_IDS","COMMONCONTROL","QUESTIONTEXT","QID","PRECONDITION_OPTIONS","CONCLUSION_OPTIONS","JUSTIFICATION_OPTIONS","PROOFSTEP_OPTIONS");
 	var vVariables = loadVariables(vHashID);
 	return vVariables;
 }
@@ -374,7 +374,7 @@ function getDateString() {
 	var vNow = new Date();
 	var vMonth = vNow.getMonth()+1;
 	return vNow.getDate()+"."+vMonth+"."+vNow.getFullYear();
-}
+};
 
 function saveVariables(pVariables)  {
 	var vEval = "";
@@ -383,7 +383,7 @@ function saveVariables(pVariables)  {
     	vEval = "if (document.fCreator.t"+iHashID+") document.fCreator.t"+iHashID+".value = pVariables[\""+iHashID+"\"]";
 		eval(vEval);
 	}
-}
+};
 
 function replaceVariables(pOutput,pVariables)  {
 	//-------------------------------
@@ -407,8 +407,23 @@ function replaceVariables(pOutput,pVariables)  {
 		pOutput = replaceString(pOutput,"___"+iHashID+"___",vReplace);
 		//pOutput = replaceString(pOutput,"###"+iHashID+"###",pVariables[iHashID]);
 
-	}
-	return pOutput
+	};
+	if (pVariables["COMMONCONTROL"]) {
+		var QIDs = new Array("4980","4981","4982","4983");
+		//var QIDs = new Array("11","22","33","44");
+		//alert(pVariables["COMMONCONTROL"]);
+		var vQID_String =  replaceString(pVariables["COMMONCONTROL"],"__co__",",");
+		var vQID_Set = vQID_String.split(",");
+		var max_i = 4;
+		if (vQID_Set.length< max_i) max_i = vQID_Set.length;
+		for (var i=0; i<max_i; i++) {
+			QIDs[i] = vQID_Set[i];
+		};
+		for (var i=0; i<QIDs.length; i++) {
+			pOutput = replaceString(pOutput,"___CODE_ID_"+i+"___",QIDs[i]);
+		};
+	};
+	return pOutput;
 }
 
 function onLoad_Form_Replace() {
@@ -838,15 +853,31 @@ Use e.g. Notepad (Win), Textwrangler (Mac), kate (Linux)
 	</tr>
 	<tr>
 		<td>
-		   <b>Show XML-Code of e-Proof:</b> 
+		   <b>Language (EN or DE):</b> 
 		</td>
 		<td>
-		  <input type=text name="tSHOW_XML" value="0" size="2"> 
+		  <input type=text name="tLANGUAGE" value="EN" size="3"> 
 		</td>
 	</tr>
 	<tr>
 		<td>
-		   <b>Show Feedback Assessment:</b> 
+		   <b>Show Main-Control in e-Proof:</b> 
+		</td>
+		<td>
+		  <input type=text name="tSHOW_MAIN_CONTROL" value="0" size="2"> 
+		</td>
+	</tr>
+	<tr>
+		<td>
+		   <b>Show Load-Save-Control in e-Proof:</b> 
+		</td>
+		<td>
+		  <input type=text name="tSHOW_LOAD_SAVE" value="0" size="2"> 
+		</td>
+	</tr>
+	<tr>
+		<td>
+		   <b>Show Assessment:</b> 
 		</td>
 		<td>
 		  <input type=text name="tSHOW_FEEDBACK_SCORE" value="1" size="2"> 
@@ -931,7 +962,7 @@ Use e.g. Notepad (Win), Textwrangler (Mac), kate (Linux)
 		   <b>Question-ID Randomizer/Remapper:</b> 
 		</td>
 		<td>
-		  <input type=text name="tCODE_ID_III" value="4200" size="6"> Randomize and Remapping Code Steps 
+		  <input type=text name="tCOMMONCONTROL" value="4980,4981,4982,4983" size="26"> Randomize and Remapping Code Steps 
 		</td>
 	</tr>
 	<tr>
@@ -939,15 +970,15 @@ Use e.g. Notepad (Win), Textwrangler (Mac), kate (Linux)
 		   <b>Question-ID Background Code 1:</b> 
 		</td>
 		<td>
-		  <input type=text name="tCODE_ID_I" value="4001" size="6"> 
+		  <input type=text name="tQUESTIONTEXT" value="4980,4981,4982,4983" size="26"> 
 		</td>
 	</tr>
 	<tr>
 		<td>
-		   <b>Question-ID Background Code 2:</b> 
+		   <b>QID for e-Proof (unique):</b> 
 		</td>
 		<td>
-		  <input type=text name="tCODE_ID_II" value="4002" size="6"> 
+		  <input type=text name="tQID" value="ZRIRH" size="6"> 
 		</td>
 	</tr>
 	<tr>
@@ -1325,6 +1356,7 @@ Use the export/import feature to save and store your current work in a text file
 //-----Author:  ___AUTHOR___
 //-----e-Mail:  ___EMAIL___
 //-----created: ___DATE___
+//-----Language: ___LANGUAGE___
 //--------------------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------------------
@@ -1338,7 +1370,11 @@ Use the export/import feature to save and store your current work in a text file
   $Theorem_Appendix = "___THEOREM_APPENDIX___"
 //--------------------------------------------------------------------------------------
 
-$Per_Error_Minus_Percent = ___PER_ERROR_MINUS_PERCENT___ // means ___PER_ERROR_MINUS_PERCENT___% less Points per Error per Step
+//--------------------------------------------------------------------------------------
+//---ASSESSMENT-SETTINGS: e.g.Point Reduction per Error or per Used Support Features--------
+$Per_Error_Minus_Percent  = ___PER_ERROR_MINUS_PERCENT___ // means ___PER_ERROR_MINUS_PERCENT___% less Points per Error per Step
+$Assessment_Minus_Percent = 2 // means 2% less Points per Use of Assessment for Step (default 100%)
+$Suggestion_Minus_Percent = 17 // means 17% less Points per Use of Suggestions for Step (default 20%)
 
 //--------------------------------------------------------------------------------------
 //-----unnecessary options make the proof step more difficult---------------------------
@@ -1357,12 +1393,20 @@ $randomize_proofstep_IDs = ___RANDOMIZE_PROOFSTEP_IDS___
 $show_feedback_score = ___SHOW_FEEDBACK_SCORE___
 $show_proof_solution = ___SHOW_PROOF_SOLUTION___
 //---For AUTHORS------------------------
-$AuthoringMode = ___AUTHORINGMODE___
-$show_XML      = ___SHOW_XML___
-$max_input_steps     = 40
-$max_authoring_steps = 12
-//--------------------------------------------------------------------------------------
-
+$show_Load_Save_Control = '___SHOW_LOAD_SAVE___'
+$show_Main_Control      = '___SHOW_MAIN_CONTROL___'
+$AuthoringMode = '___AUTHORINGMODE___'
+$AssessmentMode = '0'
+//---Miscellaneous Settings-------------
+$LANGUAGE='___LANGUAGE___'  //EN or DE for German e-Proofs
+$cryptkey='ACBSD'  // used if solution graph is encrypted in e-Proof-XML
+$show_links='1'  // set to '0' for electronic assessment to remove external links
+$MathFormat='AM_HTMLorMML'  // ASCIImath, alter settings for LaTeX math expression (for MathJax-Offline use only)
+// $vQID='___QID___'  //uncomment for use of unique Question-ID
+//----Questionnumbers for Backgroundcode
+$COMMONCONTROL='___COMMONCONTROL___'
+$QUESTIONTEXT='___COMMONCONTROL___'
+$alertDOM='0'
 
 //--------------------------------------------------------------
 //--------------PRECONDITION------------------------------------
@@ -1397,12 +1441,25 @@ $MinimalProofSteps = $so
 //--------------------------------------
 //------INCLUDE LIBRARIES---------------
 //--------------------------------------
-includecodefrom(___CODE_ID_III___)  //QID for Background Code 0 - Remapping and Rondomize
-includecodefrom(___CODE_ID_I___)  //QID of Background Code 1 - Language-Def, Assessment and Postprocessing
-includecodefrom(___CODE_ID_II___)  //QID of Background Code 2 - Scoring and Code Generation
+
+includecodefrom(___CODE_ID_0___)  //QID of Background Code 0 - Scoring and Code Generation
+includecodefrom(___CODE_ID_1___)  //QID of Background Code 1 - Scoring and Code Generation
+includecodefrom(___CODE_ID_2___)  //QID of Background Code 2 - Scoring and Code Generation
+includecodefrom(___CODE_ID_3___)  //QID of Background Code 3 - Scoring and Code Generation
+
+//-----------------------------------------------------------------------
+//----QUETIONTEXT: uncomment the following 6 lines by removing '//'------
+//----and insert the code in Question Text of your IMathAS question------
+//-----------------------------------------------------------------------
+
+// <SCRIPT type='text/javascript'>
+// includeqtextfrom(___CODE_ID_1___)
+// includeqtextfrom(___CODE_ID_2___)
+// includeqtextfrom(___CODE_ID_3___)
+// </SCRIPT>
+// includeqtextfrom(___CODE_ID_0___)
+
 //----------------------------------------------------------
-//----insert in following include command Question Text-----
-// includeqtextfrom(___CODE_ID_I___)
 //----------------------------------------------------------
 </TEXTAREA>
 <!---------------------------------------------------------------------------->
